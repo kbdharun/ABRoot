@@ -87,11 +87,11 @@ jobs:
           LOOP_EFI=$(losetup -Pf --show vos-efi.img)
 
           # Format the loop devices
-          mkfs.ext4 $LOOP_VAR
-          mkfs.ext4 $LOOP_A
-          mkfs.ext4 $LOOP_B
-          mkfs.ext4 $LOOP_BOOT
-          mkfs.vfat $LOOP_EFI
+          mkfs.ext4 -L vos-var $LOOP_VAR
+          mkfs.ext4 -L vos-a $LOOP_A
+          mkfs.ext4 -L vos-b $LOOP_B
+          mkfs.ext4 -L vos-boot $LOOP_BOOT
+          mkfs.vfat -n vos-efi $LOOP_EFI
 
           # Add a delay to give the system time to update the block device information
           sleep 5
