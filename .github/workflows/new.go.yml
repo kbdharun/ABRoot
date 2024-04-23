@@ -60,7 +60,7 @@ jobs:
       - name: Install Dependencies
         run: |
           apt-get update
-          apt-get install -y parted mount kpartx kmod linux-image-amd64
+          apt-get install -y parted mount kpartx kmod linux-image-amd64 dosfstools
 
       - name: Extract Build
         run: |
