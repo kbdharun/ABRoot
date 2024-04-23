@@ -59,7 +59,7 @@ jobs:
       - name: Install Dependencies
         run: |
           apt-get update
-          apt-get install -y parted mount kpartx kmod
+          apt-get install -y parted mount kpartx kmod linux-image-$(uname -r)
 
       - name: Load loop module
         run: |
