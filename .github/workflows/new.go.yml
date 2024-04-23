@@ -78,30 +78,38 @@ jobs:
           # Check virtual disk files
           ls -l vos-*.img
 
-          # Associate virtual disks with loop devices
-          LOOP_VAR=$(losetup -Pf --show vos-var.img)
-          LOOP_A=$(losetup -Pf --show vos-a.img)
-          LOOP_B=$(losetup -Pf --show vos-b.img)
-          LOOP_BOOT=$(losetup -Pf --show vos-boot.img)
-          LOOP_EFI=$(losetup -Pf --show vos-efi.img)
-
-          # Check loop devices
-          losetup -a
-
-          # Format virtual disks
-          mkfs.ext4 $LOOP_VAR -L vos-var
-          mkfs.ext4 $LOOP_A -L vos-a
-          mkfs.ext4 $LOOP_B -L vos-b
-          mkfs.ext4 $LOOP_BOOT -L vos-boot
-          mkfs.vfat $LOOP_EFI -n vos-efi
-
+      - name: Associate and Format Virtual Disks
+        run: |
+            # Associate virtual disks with loop devices
+            LOOP_VAR=$(losetup -Pf --show vos-var.img)
+            LOOP_A=$(losetup -Pf --show vos-a.img)
+            LOOP_B=$(losetup -Pf --show vos-b.img)
+            LOOP_BOOT=$(losetup -Pf --show vos-boot.img)
+            LOOP_EFI=$(losetup -Pf --show vos-efi.img)
+  
+            # Check loop devices
+            losetup -a
+  
+            # Format virtual disks
+            mkfs.ext4 $LOOP_VAR -L vos-var
+            mkfs.ext4 $LOOP_A -L vos-a
+            mkfs.ext4 $LOOP_B -L vos-b
+            mkfs.ext4 $LOOP_BOOT -L vos-boot
+            mkfs.vfat $LOOP_EFI -n vos-efi
+  
+            # Verify filesystems
+            for LOOP in $LOOP_VAR $LOOP_A $LOOP_B $LOOP_BOOT $LOOP_EFI
+            do
+              blkid $LOOP
+            done
+  
       - name: Check Block Devices
         run: |
-          lsblk -J -o NAME,FSTYPE,LABEL,MOUNTPOINT,UUID
-
+            lsblk -J -o NAME,FSTYPE,LABEL,MOUNTPOINT,UUID
+  
       - name: Run Integration Test
         run: |
-          ./abrootv2 status
+            ./abrootv2 status
 
   release:
     name: Release
