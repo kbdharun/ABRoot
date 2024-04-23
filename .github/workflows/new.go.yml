@@ -77,8 +77,9 @@ jobs:
           echo "\nCheck Virtual Disks Images"
           ls -l vos-*.img
 
-      - name: Setup Loop Devices
+      - name: Setup Loop Devices and Run Integration Test
         run: |
+          # Create loop devices
           LOOP_VAR=$(losetup -Pf --show vos-var.img)
           LOOP_A=$(losetup -Pf --show vos-a.img)
           LOOP_B=$(losetup -Pf --show vos-b.img)
@@ -92,14 +93,11 @@ jobs:
           mkfs.ext4 $LOOP_BOOT
           mkfs.vfat $LOOP_EFI
 
-      - name: Check Loop Devices
-        run: losetup -a
+          # Check loop devices
+          losetup -a
+          lsblk -J -o "NAME,FSTYPE,LABEL,MOUNTPOINT,UUID"
 
-      - name: List devices
-        run: lsblk -J -o "NAME,FSTYPE,LABEL,MOUNTPOINT,UUID"
-
-      - name: Run Integration Test
-        run: |
+          # Run integration test
           ./abrootv2 status
 
   release:
