@@ -97,6 +97,9 @@ jobs:
           losetup -a
           lsblk -J -o "NAME,FSTYPE,LABEL,MOUNTPOINT,UUID"
 
+          # Check if loop devices exist in the filesystem
+          ls /dev/loop*
+
           # Run integration test
           ./abrootv2 status
 
