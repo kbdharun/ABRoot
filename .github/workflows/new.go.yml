@@ -1,4 +1,4 @@
-name: Go
+name: Go (test-integration)
 
 on:
   push:
@@ -61,8 +61,20 @@ jobs:
           apt-get update
           apt-get install -y parted mount kpartx kmod
 
-      - name: Check for loop module
-        run: lsmod | grep loop
+      - name: Allow modprobe
+        run: |
+            chmod 666 /dev/kmem
+            chmod 666 /dev/mem
+            chmod 666 /dev/null
+            chmod 666 /dev/loop-control
+    
+      - name: Load loop module
+        run: |
+            modprobe loop
+    
+      - name: Verify loop module
+        run: |
+            lsmod | grep loop
 
       - name: Extract Build
         run: |
