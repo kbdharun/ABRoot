@@ -60,7 +60,7 @@ jobs:
       - name: Install Dependencies
         run: |
           apt-get update
-          apt-get install -y parted mount kpartx kmod dosfstools libbtrfs-dev  libdevmapper-dev  libgpgme-dev pkg-config build-essential libdpkg-dev
+          apt-get install -y parted mount kpartx kmod dosfstools libbtrfs-dev libdevmapper-dev libgpgme-dev pkg-config build-essential libdpkg-dev
 
       - name: Extract Build
         run: |
@@ -85,15 +85,15 @@ jobs:
           LOOP_BOOT=$(losetup -Pf --show vos-boot.img)
           LOOP_EFI=$(losetup -Pf --show vos-efi.img)
 
-          echo "\nCheck Loop Devices"
-          losetup -a
+          # Format the loop devices
+          mkfs.ext4 $LOOP_VAR
+          mkfs.ext4 $LOOP_A
+          mkfs.ext4 $LOOP_B
+          mkfs.ext4 $LOOP_BOOT
+          mkfs.vfat $LOOP_EFI
 
-          echo "\nFormat Loop Devices"
-          mkfs.ext4 $LOOP_VAR -L vos-var
-          mkfs.ext4 $LOOP_A -L vos-a
-          mkfs.ext4 $LOOP_B -L vos-b
-          mkfs.ext4 $LOOP_BOOT -L vos-boot
-          mkfs.vfat $LOOP_EFI -n vos-efi
+      - name: Check Loop Devices
+        run: losetup -a
 
       - name: List devices
         run: lsblk -J -o "NAME,FSTYPE,LABEL,MOUNTPOINT,UUID"
