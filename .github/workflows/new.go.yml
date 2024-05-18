@@ -93,8 +93,15 @@ jobs:
           mkfs.ext4 -L vos-boot $LOOP_BOOT
           mkfs.vfat -n vos-efi $LOOP_EFI
 
-          # Add a delay to give the system time to update the block device information
-          sleep 5
+          # Inform the OS of partition table changes
+          partprobe $LOOP_VAR
+          partprobe $LOOP_A
+          partprobe $LOOP_B
+          partprobe $LOOP_BOOT
+          partprobe $LOOP_EFI
+
+          # Add a delay to ensure system updates block device info
+          sleep 10
 
           # Check loop devices
           losetup -a
