@@ -125,6 +125,7 @@ func (r *Registry) GetManifest(token string) (*Manifest, error) {
 
 	req.Header.Set("User-Agent", "abroot")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	req.Header.Set("Accept", "application/vnd.oci.image.manifest.v1+json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -146,10 +147,25 @@ func (r *Registry) GetManifest(token string) (*Manifest, error) {
 		return nil, err
 	}
 
+	// If the manifest contains an errors property, it means that the
+	// request failed. Ref: https://github.com/Vanilla-OS/ABRoot/issues/285
+	if m["errors"] != nil {
+		errors := m["errors"].([]interface{})
+		for _, e := range errors {
+			err := e.(map[string]interface{})
+			PrintVerboseErr("Registry.GetManifest", 3.5, err)
+			return nil, fmt.Errorf("Registry error: %s", err["code"])
+		}
+	}
+
 	// digest is stored in the header
 	digest := resp.Header.Get("Docker-Content-Digest")
 
 	// we need to parse the layers to get the digests
+	if m["layers"] == nil {
+		PrintVerboseErr("Registry.GetManifest", 4, err)
+		return nil, fmt.Errorf("Manifest does not contain layer property")
+	}
 	layers := m["layers"].([]interface{})
 	var layerDigests []string
 	for _, layer := range layers {

@@ -47,6 +47,7 @@ pkg:
     для встраиваемых систем
   failedGettingPkgManagerInstance: "Не удалось получить экземпляр менеджера пакетов:
     %s\n"
+  noChanges: Нет изменений для применения.
 status:
   short: Показать состояние
   dumpMsg: "Состояние ABRoot сохранено в %s\n"
@@ -64,8 +65,8 @@ status:
     memory: 'Память: %s'
   loadedConfig: 'Загруженная конфигурация:'
   partitions:
-    future: 'Будущие: %s%s'
-    present: 'Текущие: %s%s'
+    future: 'Будущий: %s%s'
+    present: 'Текущий: %s%s'
     title: 'Разделы ABRoot:'
   abimage:
     timestamp: 'Временная метка: %s'
