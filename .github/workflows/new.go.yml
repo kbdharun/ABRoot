@@ -47,7 +47,11 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/vanilla-os/pico:main
-      options: --privileged
+      options: |
+        --privileged
+        --device /dev/kvm
+        --cap-add=ALL
+        --security-opt seccomp=unconfined
     needs: build
     steps:
       - uses: actions/checkout@v4
@@ -60,7 +64,13 @@ jobs:
       - name: Install Dependencies
         run: |
           apt-get update
-          apt-get install -y parted mount kpartx kmod dosfstools libbtrfs-dev libdevmapper-dev libgpgme-dev pkg-config build-essential libdpkg-dev
+          apt-get install -y parted mount kpartx kmod dosfstools libbtrfs-dev libdevmapper-dev libgpgme-dev pkg-config build-essential libdpkg-dev qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils virt-manager
+
+      - name: Verify KVM
+        run: |
+          lsmod | grep kvm
+          kvm-ok || echo "KVM is not supported"
+          sudo kvm-ok || echo "KVM is not supported"
 
       - name: Extract Build
         run: |
@@ -86,6 +96,9 @@ jobs:
           LOOP_BOOT=$(losetup -Pf --show vos-boot.img)
           LOOP_EFI=$(losetup -Pf --show vos-efi.img)
 
+          # Wait for the system to update the block device information
+          sleep 10
+
           # Format the loop devices
           mkfs.ext4 -L vos-var $LOOP_VAR
           mkfs.ext4 -L vos-a $LOOP_A
@@ -93,14 +106,7 @@ jobs:
           mkfs.ext4 -L vos-boot $LOOP_BOOT
           mkfs.vfat -n vos-efi $LOOP_EFI
 
-          # Inform the OS of partition table changes
-          partprobe $LOOP_VAR
-          partprobe $LOOP_A
-          partprobe $LOOP_B
-          partprobe $LOOP_BOOT
-          partprobe $LOOP_EFI
-
-          # Add a delay to ensure system updates block device info
+          # Add a delay to give the system time to update the block device information
           sleep 10
 
           # Check loop devices
@@ -112,6 +118,20 @@ jobs:
 
           # Run integration test
           ./abrootv2 status --verbose
+
+      - name: Additional Debug Information
+        run: |
+          echo "Loop Devices:"
+          losetup -a
+
+          echo "Block Devices:"
+          lsblk -a
+
+          echo "Disk Information:"
+          fdisk -l
+
+          echo "Filesystem Types:"
+          blkid
 
   release:
     name: Release
